@@ -4,7 +4,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import axios from "axios";
 import AccountNav from "../AccountNav.jsx";
 
-export default function AccountPage() {
+export default function ProfilePage() {
     const [redirect, setRedirect] = useState(null);
     const {ready, user, setUser} = useContext(UserContext);
     let {subpage} = useParams();
