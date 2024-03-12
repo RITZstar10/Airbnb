@@ -14,12 +14,23 @@ const placeSchema = new Schema({
         required: true
     },
     photos: [String],
-    description: String,
+    description: {
+        type: String,
+    },
     perks: [String],
     extraInfo: [String],
-    checkIn: Number,
-    checkOut: Number,
-    maxGuests: Number
+    checkIn: {
+        type: Number,
+    },
+    checkOut: {
+        type: Number,
+    },
+    maxGuests: {
+        type: Number,
+    },
+    price: {
+        type: Number,
+    }
 })
 
-export const PlaceModel = mongoose.model('PlaceModel', placeSchema);
+export const PlaceModel = mongoose.model('Place', placeSchema);
