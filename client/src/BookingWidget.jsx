@@ -1,17 +1,40 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { differenceInCalendarDays } from 'date-fns';
+import { UserContext } from "./UserContext";
 
 export default function BookingWidget({place}) {
     const [checkIn, setCheckIn] = useState('');
     const [checkOut, setCheckOut] = useState('');
     const [numberOfGuests, setNumberOfGuests] = useState(1);
     const [name, setName] = useState('');
-    const [mobile, setMobile] = useState('');
+    const [phone, setPhone] = useState('');
+    const [redirect, setRedirect] = useState('');
+    const {user} = useContext(UserContext);
+
+    useEffect(() => {
+        if(user) {
+            setName(user.name);
+        }
+    }, [user]);
 
     let numberOfNights = 0;
 
     if(checkIn && checkOut) {
         numberOfNights = differenceInCalendarDays(new Date(checkIn), new Date(checkOut));
+    }
+
+    async function bookThisPlace() {
+        const response = await axios.post('/bookings', {
+            checkIn, checkOut, numberOfGuests, name, phone,
+            place: place._id,
+            price: numberOfNights * place.price
+        });
+        const bookingId = response.data._id;
+        setRedirect(`/account/bookings/${bookingId}`);
+    }
+
+    if(redirect) {
+        return <Navigate to={redirect}/>
     }
 
     return(
@@ -49,13 +72,13 @@ export default function BookingWidget({place}) {
                                 onChange={e => setName(e.target.value)}/>
                             <label>Phone Number: </label>
                             <input type="tel" 
-                                value={mobile} 
-                                onChange={e => setMobile(e.target.value)}/>
+                                value={phone} 
+                                onChange={e => setPhone(e.target.value)}/>
                         </div>
                     )}
                 </div>
             </div>
-            <button className="primary mt-4">
+            <button onClick={bookThisPlace} className="primary mt-4">
             Book this places
             {numberOfNights > 0 && (
                 <span> ₹{numberOfNights * place.price}</span>

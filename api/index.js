@@ -1,8 +1,9 @@
-import express from "express";
+import express, { response } from "express";
 import cors from "cors";
 import jwt  from "jsonwebtoken";
 import { UserModel } from './models/user.model.js';
-import { Place } from './models/Place.js'
+import { Place } from './models/Place.model.js'
+import { BookingModel } from "./models/Booking.model.js";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
@@ -44,6 +45,15 @@ app.post('/register', async (req, res) => {
     .json(error)   
    }
 });
+
+function getUserDataFromToken(req) {
+    return new Promise((resolve, reject) => {
+        jwt.verify(req.cookies.token, process.env.JWT_SECRET, {}, async (err, userData) => {
+            if(err) throw err;
+            response(userData);
+        });
+    });
+}
 
 app.post('/login', async (req, res) => {
     const {email, password} = req.body;
@@ -172,6 +182,26 @@ app.put('/places', async (req, res) => {
 
 app.get('/places', async (req, res) => {
     res.json(await Place.find());
+});
+
+app.post('/bookings', async (req, res) => {
+    const userData = await getUserDataFromToken(req);
+    const {
+        place, checkIn, checkOut, numberOfGuests, name, phone, price
+        } = req.body;
+    BookingModel.create({
+        place, checkIn, checkOut, numberOfGuests, name, phone, price,
+        user:userData.id,
+    }).then((doc) => {
+        res.json(doc);
+    }).catch((err) => {
+        throw err;
+    });
+});
+
+app.get('/bookings', async (req, res) => {
+    const userData = await getUserDataFromToken(req);
+    res.json( await BookingModel.find({user:userData.id}).populate('place'));
 });
 
 app.get('/test', (req, res) => {
